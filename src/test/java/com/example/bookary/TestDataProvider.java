@@ -23,4 +23,8 @@ class TestDataProvider {
         return firstAuthor;
     }
 
+    public static Author getSecondAuthor() {
+        return secondAuthor;
+    }
+
 }

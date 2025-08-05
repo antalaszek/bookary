@@ -1,6 +1,8 @@
 package com.example.bookary;
 
+import com.example.bookary.AuthorsController.CreateAuthorRequest;
 import com.example.bookary.BookController.CreateBookRequest;
+import com.example.bookary.models.Author;
 import com.example.bookary.models.BookWithAuthors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -13,8 +15,7 @@ import org.springframework.http.ResponseEntity;
 import java.net.URI;
 import java.util.Set;
 
-import static com.example.bookary.TestDataProvider.getFirstAuthor;
-import static com.example.bookary.TestDataProvider.getSingleBookWithTwoAuthors;
+import static com.example.bookary.TestDataProvider.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -25,7 +26,10 @@ class BookaryApplicationTests {
 
     @Test
     void shouldReturnABookWhenDataIsSaved() {
-        ResponseEntity<BookWithAuthors> response = restTemplate.getForEntity("/books/13", BookWithAuthors.class);
+        ResponseEntity<BookWithAuthors> response = restTemplate.getForEntity(
+                "/books/13",
+                BookWithAuthors.class
+        );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         BookWithAuthors responseBook = response.getBody();
@@ -36,7 +40,10 @@ class BookaryApplicationTests {
 
     @Test
     void shouldReturnStatusCode404IfNoSuchBook() {
-        ResponseEntity<BookWithAuthors> response = restTemplate.getForEntity("/books/2137", BookWithAuthors.class);
+        ResponseEntity<BookWithAuthors> response = restTemplate.getForEntity(
+                "/books/2137",
+                BookWithAuthors.class
+        );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
         BookWithAuthors responseBook = response.getBody();
@@ -57,19 +64,16 @@ class BookaryApplicationTests {
         ResponseEntity<Void> response = restTemplate.postForEntity("/books", bookRequest, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         URI locationOfNewBook = response.getHeaders().getLocation();
-        ResponseEntity<BookWithAuthors> newAddedBookResponse = restTemplate.getForEntity(locationOfNewBook, BookWithAuthors.class);
+        ResponseEntity<BookWithAuthors> newAddedBookResponse = restTemplate.getForEntity(
+                locationOfNewBook,
+                BookWithAuthors.class
+        );
         assertThat(newAddedBookResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         BookWithAuthors bookResponseBody = newAddedBookResponse.getBody();
         Assertions.assertNotNull(bookResponseBody);
-        assertThat(bookResponseBody.authors()).isEqualTo(
-                Set.of(getFirstAuthor())
-        );
-        assertThat(bookResponseBody.title()).isEqualTo(
-                bookRequest.title()
-        );
-        assertThat(bookResponseBody.year()).isEqualTo(
-                bookRequest.year()
-        );
+        assertThat(bookResponseBody.authors()).isEqualTo(Set.of(getFirstAuthor()));
+        assertThat(bookResponseBody.title()).isEqualTo(bookRequest.title());
+        assertThat(bookResponseBody.year()).isEqualTo(bookRequest.year());
 
 
     }
@@ -79,10 +83,57 @@ class BookaryApplicationTests {
         CreateBookRequest bookRequest = new CreateBookRequest("Leć Adaś", 2023, Set.of(123L, 124L));
         ResponseEntity<Void> response = restTemplate.postForEntity("/books", bookRequest, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        URI locationOfNewBook = response.getHeaders().getLocation();
+        ResponseEntity<BookWithAuthors> newAddedBookResponse = restTemplate.getForEntity(
+                locationOfNewBook,
+                BookWithAuthors.class
+        );
+        assertThat(newAddedBookResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        BookWithAuthors bookResponseBody = newAddedBookResponse.getBody();
+        Assertions.assertNotNull(bookResponseBody);
+        assertThat(bookResponseBody.authors()).isEqualTo(Set.of(getFirstAuthor(), getSecondAuthor()));
+        assertThat(bookResponseBody.title()).isEqualTo(bookRequest.title());
+        assertThat(bookResponseBody.year()).isEqualTo(bookRequest.year());
     }
 
     @Test
-    void contextLoads() {
+    void shouldReturnAnAuthorWhenDataIsSaved() {
+        ResponseEntity<Author> response = restTemplate.getForEntity("/authors/123", Author.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        Author responseAuthor = response.getBody();
+        Assertions.assertNotNull(responseAuthor);
+        assertThat(responseAuthor).isEqualTo(getFirstAuthor());
     }
 
+    @Test
+    void shouldReturnStatusCode404IfNoSuchAuthor() {
+        ResponseEntity<Author> response = restTemplate.getForEntity("/authors/2137", Author.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        Author responseBook = response.getBody();
+        assertThat(responseBook).isNull();
+    }
+
+
+    @Test
+    void shouldReturnCreatedForNewAuthor() {
+        CreateAuthorRequest authorRequest = new CreateAuthorRequest("Robert Musil");
+        ResponseEntity<Void> response = restTemplate.postForEntity(
+                "/authors",
+                authorRequest,
+                Void.class
+        );
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        URI locationOfNewAuthor = response.getHeaders().getLocation();
+        ResponseEntity<Author> newAuthorResponse = restTemplate.getForEntity(
+                locationOfNewAuthor,
+                Author.class
+        );
+        assertThat(newAuthorResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        Author authorResponseBody = newAuthorResponse.getBody();
+        Assertions.assertNotNull(authorResponseBody);
+        assertThat(authorResponseBody.name()).isEqualTo(authorRequest.name());
+    }
 }

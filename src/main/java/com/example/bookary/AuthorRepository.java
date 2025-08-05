@@ -7,4 +7,5 @@ import java.util.Set;
 
 interface AuthorRepository extends CrudRepository<Author, Long> {
     Integer countAllByIdIn(Set<Long> authorIds);
+
 }
