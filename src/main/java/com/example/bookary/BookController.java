@@ -1,6 +1,9 @@
 package com.example.bookary;
 
 import com.example.bookary.models.BookWithAuthors;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -12,14 +15,24 @@ import java.util.Set;
 @RestController
 @RequestMapping("/books")
 class BookController {
-    public record CreateBookRequest(String title, Integer year, Set<Long> authorIds) {
-    }
-
+    public record CreateBookRequest(String title, Integer year, Set<Long> authorIds) {}
 
     private final BookService bookService;
 
     private BookController(BookService bookService) {
         this.bookService = bookService;
+    }
+
+    @GetMapping
+    private ResponseEntity<Iterable<BookWithAuthors>> findAll(Pageable pageable) {
+        var booksPage = bookService.findAll(PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                pageable.getSortOr(Sort.by(
+                        new Sort.Order(Sort.Direction.ASC, "title")
+                ))
+        ));
+        return ResponseEntity.ok(booksPage.getContent());
     }
 
     @GetMapping("/{requestedId}")

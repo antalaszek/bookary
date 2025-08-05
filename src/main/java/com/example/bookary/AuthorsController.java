@@ -1,6 +1,9 @@
 package com.example.bookary;
 
 import com.example.bookary.models.Author;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -18,6 +21,18 @@ class AuthorsController {
 
     private AuthorsController(AuthorRepository authorRepository) {
         this.authorRepository = authorRepository;
+    }
+
+    @GetMapping
+    private ResponseEntity<Iterable<Author>> findAll(Pageable pageable) {
+        var authorsPage = authorRepository.findAll(PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                pageable.getSortOr(Sort.by(
+                        new Sort.Order(Sort.Direction.ASC, "name")
+                ))
+        ));
+        return ResponseEntity.ok(authorsPage.getContent());
     }
 
     @GetMapping("/{requestedId}")

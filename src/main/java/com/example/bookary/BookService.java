@@ -2,6 +2,8 @@ package com.example.bookary;
 
 import com.example.bookary.models.Book;
 import com.example.bookary.models.BookWithAuthors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,22 @@ class BookService {
                         b.title(),
                         b.year(),
                         b.authors()
+                                .stream()
+                                .map(
+                                        ref -> authorRepository
+                                                .findById(ref.authorId())
+                                                .orElseThrow())
+                                .collect(toSet())
+                ));
+    }
+
+    public Page<BookWithAuthors> findAll(PageRequest pageRequest) {
+        return bookRepository.findAll(pageRequest).map(book ->
+                new BookWithAuthors(
+                        book.id(),
+                        book.title(),
+                        book.year(),
+                        book.authors()
                                 .stream()
                                 .map(
                                         ref -> authorRepository
