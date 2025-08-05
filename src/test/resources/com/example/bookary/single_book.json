@@ -1,0 +1,9 @@
+{
+  "id" : 13,
+  "title" : "Jak zostałem skoczkiem",
+  "year" : 2005,
+  "authors" : [ {
+    "id" : 123,
+    "name" : "Adam Małysz"
+  } ]
+}

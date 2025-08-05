@@ -38,6 +38,6 @@ test {
         showCauses true
         showStackTraces true
 
-        showStandardStreams = false
+        showStandardStreams = true
     }
 }
